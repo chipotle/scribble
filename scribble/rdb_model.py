@@ -37,21 +37,25 @@ class Model(object):
             self.read(doc_id)
 
     def __repr__(self):
+        """Printable representation of a model object."""
         if 'id' in self._doc:
             return "<{0} {1}>".format(type(self).__name__, self.id)
         else:
             return "<{0} (new)>".format(type(self).__name__)
 
     def __getattr__(self, item):
+        """Allow retrieving document values as object properties."""
         return self._doc[item]
 
     def __setattr__(self, key, value):
+        """Allow setting document values through object properties."""
         if key in self.__dict__:
             self.__dict__[key] = value
         else:
             self._doc[key] = value
 
     def __delattr__(self, item):
+        """Allow deleting document values via object properties."""
         del self._doc[item]
 
     # Instance CRUD methods
@@ -117,7 +121,7 @@ class Model(object):
 
     @classmethod
     def read_set(cls, *args, **kwargs):
-        """Read a set of document ids. Returns a list of model objects."""
+        """Read a set of documents. Returns a list of model objects."""
         hydrate = kwargs.pop('hydrate', True)
         with db_connect() as conn:
             set = r.table(cls._table).get_all(*args, **kwargs).run(conn)
