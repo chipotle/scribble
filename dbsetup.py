@@ -2,26 +2,31 @@ import argparse
 from scribble import app
 import rethinkdb as r
 from rethinkdb.errors import RqlRuntimeError
+from scribble import models
 
 def seed_tables():
-    db.table('users').insert([
-        {
-            'username': 'admin',
-            'display_name': 'Administrator User',
-            'email': 'admin@scribble.com',
-        },
-        {
-            'username': 'chipotle',
-            'display_name': 'Watts Martin',
-            'email': 'layotl@gmail.com',
-            'social': { 'twitter': 'chipotlecoyote' }
-        }
-    ]).run(conn)
+    admin = models.User(doc={
+        'username': 'admin',
+        'display_name': 'Administrator User',
+        'email': 'admin@scribble.com',
+    })
+    admin.password = 'adminpass'
+    admin.save()
+    user = models.User(doc={
+        'username': 'chipotle',
+        'display_name': 'Watts Martin',
+        'email': 'layotl@gmail.com',
+        'social': {'twitter': 'chipotlecoyote'},
+    })
+    user.password = 'banana'
+    user.save()
     print "+ tables seeded"
 
 parser = argparse.ArgumentParser(description="Set up Scribble's database")
-parser.add_argument('--reset', dest='reset', action='store_true', help='reset existing database')
-parser.add_argument('--empty', dest='empty', action='store_true', help='do not load seed data')
+parser.add_argument('--reset', dest='reset', action='store_true',
+                    help='reset existing database')
+parser.add_argument('--empty', dest='empty', action='store_true',
+                    help='do not load seed data')
 
 args = parser.parse_args()
 
