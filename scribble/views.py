@@ -8,7 +8,7 @@ def index():
     """A none-too-useful index page."""
     return render_template('index.html', name='Scribble')
 
-@app.route('/register', methods=['GET', 'POST'])
+@app.route('/register/', methods=['GET', 'POST'])
 def register():
     """Register a new user."""
     if request.method == 'GET':
