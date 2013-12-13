@@ -124,39 +124,39 @@ class Model(object):
         """Read a set of documents. Returns a list of model objects."""
         hydrate = kwargs.pop('hydrate', True)
         with db_connect() as conn:
-            set = r.table(cls._table).get_all(*args, **kwargs).run(conn)
+            doc_set = r.table(cls._table).get_all(*args, **kwargs).run(conn)
         if hydrate:
-            set = cls.__hydrate(set)
-        return set
+            doc_set = cls.__hydrate(doc_set)
+        return doc_set
 
     @classmethod
     def all(cls, hydrate=True):
         """Return all the objects stored for a given model."""
         with db_connect() as conn:
-            set = r.table(cls._table).run(conn)
+            doc_set = r.table(cls._table).run(conn)
         if hydrate:
-            set = cls.__hydrate(set)
-        return set
+            doc_set = cls.__hydrate(doc_set)
+        return doc_set
 
     @classmethod
     def between(cls, *args, **kwargs):
         """Get all documents between two keys."""
         hydrate = kwargs.pop('hydrate', True)
         with db_connect() as conn:
-            set = r.table(cls._table).between(*args, **kwargs).run(conn)
+            doc_set = r.table(cls._table).between(*args, **kwargs).run(conn)
         if hydrate:
-            set = cls.__hydrate(set)
-        return set
+            doc_set = cls.__hydrate(doc_set)
+        return doc_set
 
     @classmethod
     def filter(cls, *args, **kwargs):
         """Get all objects for which the given predicate is true."""
         hydrate = kwargs.pop('hydrate', True)
         with db_connect() as conn:
-            set = r.table(cls._table).filter(*args, **kwargs).run(conn)
+            doc_set = r.table(cls._table).filter(*args, **kwargs).run(conn)
         if hydrate:
-            set = cls.__hydrate(set)
-        return set
+            doc_set = cls.__hydrate(doc_set)
+        return doc_set
 
     @classmethod
     def r(cls):
