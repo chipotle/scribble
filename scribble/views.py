@@ -13,17 +13,13 @@ def index():
 def register():
     """Register a new user."""
     form = RegisterForm()
-    error = False
     if form.validate_on_submit():
-        if User.has('username', form.username.data):
-            error=True
-        else:
-            user = User({
-                'username': form.username.data,
-                'password': form.password.data,
-                'email': form.email.data,
-                'display_name': form.display_name.data
-            })
-            user.save()
-            return redirect('/')
-    return render_template('register.html', form=form, error=error)
+        user = User({
+            'username': form.username.data,
+            'password': form.password.data,
+            'email': form.email.data,
+            'display_name': form.display_name.data
+        })
+        user.save()
+        return redirect('/')
+    return render_template('register.html', form=form)
