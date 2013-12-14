@@ -3,7 +3,7 @@ import rethinkdb as r
 from scribble import app
 
 
-def db_connect():
+def db():
     """Return the RethinkDB connection context manager object"""
     return r.connect(host=app.config['RDB_HOST'],
                      port=app.config['RDB_PORT'],
@@ -65,20 +65,18 @@ class Model(object):
         """Insert a new model into the database. Returns generated ID."""
         if doc is None:
             doc = self._doc
-        with db_connect() as conn:
-            result = r.table(self._table).insert(doc).run(conn)
-            if result['inserted'] == 1:
-                doc_id = result['generated_keys'][0]
-                self.id = doc_id
-                return doc_id
-            else:
-                return None
+        result = r.table(self._table).insert(doc).run(db())
+        if result['inserted'] == 1:
+            doc_id = result['generated_keys'][0]
+            self.id = doc_id
+            return doc_id
+        else:
+            return None
 
     def read(self, doc_id):
         """Load the given document id."""
-        with db_connect() as conn:
-            self.__dict__['_doc'] = r.table(self._table).get(doc_id).run(conn)
-            return self._doc
+        self.__dict__['_doc'] = r.table(self._table).get(doc_id).run(db())
+        return self._doc
 
     def update(self, doc=None):
         """
@@ -88,9 +86,8 @@ class Model(object):
         """
         if doc is None:
             doc = self._doc
-        with db_connect() as conn:
-            result = r.table(self._table).get(self.id).update(doc).run(conn)
-            return result.get('modified', 0) == 1
+        result = r.table(self._table).get(self.id).update(doc).run(db())
+        return result.get('modified', 0) == 1
 
     def save(self):
         """Calls **update** or **insert** as appropriate."""
@@ -101,12 +98,11 @@ class Model(object):
 
     def delete(self):
         """Deletes the associated model."""
-        with db_connect() as conn:
-            result = r.table(self._table).get(self.id).delete().run(conn)
-            ok = result.get('deleted', 0) == 1
-            if ok:
-                del self.id
-            return ok
+        result = r.table(self._table).get(self.id).delete().run(db())
+        ok = result.get('deleted', 0) == 1
+        if ok:
+            del self.id
+        return ok
 
     # Class methods
 
