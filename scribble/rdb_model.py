@@ -24,7 +24,7 @@ class Model(object):
 
     # Magic methods
 
-    def __init__(self, doc_id=None, doc=None):
+    def __init__(self, doc=None, id=None):
         """
         Instantiate an object. The object can be initialized with an id to
         trigger a read (load from the database) or initialized with a
@@ -34,8 +34,8 @@ class Model(object):
         """
         if doc is not None:
             self.__dict__['_doc'] = doc
-        if doc_id is not None:
-            self.read(doc_id)
+        if id is not None:
+            self.read(id)
 
     def __repr__(self):
         """Printable representation of a model object."""
