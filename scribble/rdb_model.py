@@ -1,3 +1,4 @@
+import itertools
 import rethinkdb as r
 from scribble import app
 
@@ -110,55 +111,58 @@ class Model(object):
     # Class methods for returning sets
 
     @classmethod
-    def __hydrate(cls, set_in):
-        """Transform a list of dictionaries into a list of model objects."""
 
-        def make_obj(x):
-            obj = cls(doc=x)
-            return obj
-
-        return [make_obj(s) for s in set_in]
 
     @classmethod
     def read_set(cls, *args, **kwargs):
-        """Read a set of documents. Returns a list of model objects."""
-        hydrate = kwargs.pop('hydrate', True)
-        with db_connect() as conn:
-            doc_set = r.table(cls._table).get_all(*args, **kwargs).run(conn)
-        if hydrate:
-            doc_set = cls.__hydrate(doc_set)
-        return doc_set
+        """Read a set of documents. Returns a ModelIter object."""
+        doc_set = r.table(cls._table).get_all(*args, **kwargs).run(db())
+        return ModelIter(cls, doc_set)
 
     @classmethod
     def all(cls, hydrate=True):
         """Return all the objects stored for a given model."""
-        with db_connect() as conn:
-            doc_set = r.table(cls._table).run(conn)
-        if hydrate:
-            doc_set = cls.__hydrate(doc_set)
-        return doc_set
+        doc_set = r.table(cls._table).run(db())
+        return ModelIter(cls, doc_set)
 
     @classmethod
     def between(cls, *args, **kwargs):
         """Get all documents between two keys."""
-        hydrate = kwargs.pop('hydrate', True)
-        with db_connect() as conn:
+        with db() as conn:
             doc_set = r.table(cls._table).between(*args, **kwargs).run(conn)
-        if hydrate:
-            doc_set = cls.__hydrate(doc_set)
-        return doc_set
+        return ModelIter(cls, doc_set)
 
     @classmethod
     def filter(cls, *args, **kwargs):
         """Get all objects for which the given predicate is true."""
-        hydrate = kwargs.pop('hydrate', True)
-        with db_connect() as conn:
-            doc_set = r.table(cls._table).filter(*args, **kwargs).run(conn)
-        if hydrate:
-            doc_set = cls.__hydrate(doc_set)
-        return doc_set
+        doc_set = r.table(cls._table).filter(*args, **kwargs).run(db())
+        return ModelIter(cls, doc_set)
 
     @classmethod
     def r(cls):
         """Return the RethinkDB table object for this table."""
         return r.table(cls._table)
+
+
+class ModelIter(object):
+    """
+    Wrap a RethinkDB cursor object in an iterable that will return our model
+    objects when accessed.
+
+    """
+    def __init__(self, cls, cursor):
+        self.cls = cls
+        self.cursor = cursor
+
+    def __iter__(self):
+        for rdb in self.cursor:
+            yield self.cls(doc=rdb)
+
+    def __getitem__(self, item):
+        try:
+            return self.cls(doc=next(
+                itertools.islice(self.cursor, item, item + 1)))
+        except TypeError:
+            return list(self.cls(doc=
+                itertools.islice(self.cursor, item.start,
+                                 item.stop, item.step)))
