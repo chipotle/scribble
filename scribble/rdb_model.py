@@ -108,9 +108,17 @@ class Model(object):
                 del self.id
             return ok
 
-    # Class methods for returning sets
+    # Class methods
 
     @classmethod
+    def has(cls, key, value):
+        """
+        Return true if the table contains the given key/value pair. The key
+        must be an indexed column. Ex: User.has('username', 'chipotle')
+        """
+        doc_set = (r.table(cls._table).get_all(value, index=key).
+                   limit(1).run(db()))
+        return len(list(doc_set)) == 1
 
 
     @classmethod
