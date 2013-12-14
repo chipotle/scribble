@@ -1,3 +1,4 @@
+{% from "_formhelpers.html" import render_field %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,7 +8,19 @@
 
 <h1>Register as a new user</h1>
 
-<p>Lorem ipsum blah blah blah</p>
+{% if error %}
+<p>That username is already in use!</p>
+{% endif %}
+
+<form action="/register/" method="post">
+  {{ form.hidden_tag() }}
+  {{ render_field(form.username) }}
+  {{ render_field(form.display_name) }}
+  {{ render_field(form.email) }}
+  {{ render_field(form.password) }}
+  {{ render_field(form.confirm) }}
+  <p><button>Register</button></p>
+</form>
 
 </body>
 </html>
